@@ -36,6 +36,7 @@ For more information about Web API OData Library, refer to http://odata.github.i
 
 For more information about RESTier, refer to http://odata.github.io/RESTier/[RESTier document].
 
+*Please be noted that currently RESTier is still a preview version.*
 
 == Bootstrap an OData service
 
