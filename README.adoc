@@ -85,6 +85,9 @@ image::License-Acceptance-dialog.png[]
 
 === Add Npgsql data provider and connection string to web.config
 
+We need to add the data provider and connection string manually, as the connection builder crashes when trying to build a connection string to PostgreSQL.
+See https://github.com/npgsql/npgsql/issues/1445[this issue].
+
 0. Open the project's *web.config*.
 0. Add the Npgsql data provider factory.
 +
