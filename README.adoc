@@ -10,6 +10,7 @@ https://github.com/OData/RESTier[RESTier] is a RESTful API development framework
 
 http://www.npgsql.org/[Npgsql] is a .NET data provider for PostgreSQL.
 
+:toc:
 
 == Introduction
 
