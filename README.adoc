@@ -167,3 +167,21 @@ After these steps, you will have finished bootstrapping an OData service endpoin
 You can then Run the project and an OData service is started.
 Then you can start by accessing the URL `\http://localhost:<ISS Express port>/api/odata` to view all available entity sets, and try with other basic OData CRUD operations.
 For instance, you may try querying any of the entity sets using the `$select`, `$filter`, `$orderby`, `$top`, `$skip` or `$apply` query string parameters.
+
+
+== Documentation
+
+Please visit the http://odata.github.io/RESTier[RESTier pages]. It has detailed descriptions on each feature provided by RESTier.
+
+
+== Sample services
+
+Refer to https://github.com/OData/ODataSamples/tree/master/RESTier[sample service github] for end to end sample service.
+The source code also contains end to end service for end to end test purpose.
+All the sample service can be run with visual studio 2015.
+
+
+== Support
+
+* Issues:: Report issues on https://github.com/ogd-software/Npgsql.Restier/issues[Github issues].
+* Feedback:: Please send mails to software@ogd.nl
