@@ -1,5 +1,7 @@
 = Npgsql.Restier
 
+:imagesdir: Images
+
 Microsoft Restier ODataV4 on PostgreSQL
 
 Includes https://github.com/OData/RESTier[RESTier] related packages, and http://www.npgsql.org/[Npgsql].
@@ -7,3 +9,160 @@ Includes https://github.com/OData/RESTier[RESTier] related packages, and http://
 https://github.com/OData/RESTier[RESTier] is a RESTful API development framework for building standardized, OData V4 based RESTful services on .NET.
 
 http://www.npgsql.org/[Npgsql] is a .NET data provider for PostgreSQL.
+
+
+== Introduction
+
+OData stands for the Open Data Protocol. It was initiated by Microsoft and is now an ISO and OASIS standard.
+OData enables the creation and consumption of RESTful APIs, which allow resources, defined in a data model and identified by using URLs, to be published and edited by Web clients using simple HTTP requests.
+
+
+RESTier is a RESTful API development framework for building standardized, OData V4 based RESTful services on .NET platform.
+It can be seen as a middle-ware on top of Web API OData.
+RESTier provides facilities to bootstrap an OData service like what WCF Data Services (which is sunset) does, beside this, it supports to add business logic in several simple steps, has flexibility and easy customization like what Web API OData do.
+It also supports to add additional publishers to support other protocols and additional providers to support other data sources.
+
+
+For more information about OData, please refer to the following resources:
+
+http://www.odata.org/[OData.org]
+
+https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=odata[OASIS Open Data Protocol (OData) Technical Committee]
+
+For more information about OData .Net Library, refer to http://odata.github.io/odata.net/[OData .Net Library document].
+
+For more information about Web API OData Library, refer to http://odata.github.io/WebApi/[Web API OData Library document].
+
+For more information about RESTier, refer to http://odata.github.io/RESTier/[RESTier document].
+
+
+== Bootstrap an OData service
+
+The http://odata.github.io/RESTier/[RESTier document] has a comprehensive how-to for how to bootstrap an OData service in combination with an MS SQL database.
+Bootstrapping an OData service in combination with a PostgreSQL database is much the same, but on some points a little different as it is not supported out-of-the-box by Microsoft Visual Studio.
+
+
+=== Install Npgsql PostgreSQL Integration
+
+Before you start, you'll have to install the Npgsql PostgreSQL Integration extension into Visual Studio. 
+
+0. Open *Visual Studio 2017* or *Visual Studio 2015*.
+   If you use *Visual Studio 2017* the screens might be slightly different from the screenshots, but the procedures are essentially the same.
+0. From the *TOOLS* menu, click *Extensions and Updates…*.
+0. In the *Extensions and Updates* dialog box, click *Online*.
+0. In the search box type *npgsql* and press *Enter*.
+0. Click on the *Npgsql PostgreSQL Integration* extension and click on *Download*.
++
+image::Install-Npgsql-PostgreSQL-Integration.png[]
++
+0. In the *Download and Install* dialog box, click *Install*.
+0. After installation Visual Studio will ask for a restart. Click *Restart Now*.
+
+
+=== Create a project and a web app
+
+Continue with the step-by-step description to http://odata.github.io/RESTier/#01-02-Bootstrap[Create a project and a web app].
+
+
+=== Install the Npgsql.Restier packages
+
+0. In the *Solution Explorer* window, right click the project *HelloWorld* and select *Manage NuGet Packages…*.
+0. In the *NuGet Package Manager* window, select the *Include prerelease* checkbox.
+0. Type *npgsql restier* in the Search Box beside and press *Enter*.
+0. Select *Npgsql.Restier* and click the *Install* button.
++
+image::Install-Npgsql-Restier.png[]
++
+0. In the *Preview* dialog box, click the *OK* button
++
+image::Preview-dialog.png[]
++
+0. In the *License Acceptance* dialog box, click the *I Accept* button.
++
+image::License-Acceptance-dialog.png[]
+
+
+=== Add Npgsql data provider and connection string to web.config
+
+0. Open the project's *web.config*.
+0. Add the Npgsql data provider factory.
++
+```xml
+<system.data>
+    <DbProviderFactories>
+        <add name="Npgsql Data Provider"
+             invariant="Npgsql"
+             description="Data Provider for PostgreSQL"
+             type="Npgsql.NpgsqlFactory, Npgsql" />
+    </DbProviderFactories>
+</system.data>
+```
++
+0. Add a connection string and set the correct values.
++
+```xml
+<connectionStrings>
+    <add name="defaultConnection"
+         connectionString="Host=[host];Port=5432;Database=[database];Username=[username];Password=***"
+         providerName="Npgsql" />
+</connectionStrings>
+```
+
+
+=== Generate the model classes
+
+0. In the *Solution Explorer* window, right click the *Models* folder under the project *HelloWorld* and select *Add > New Item*.
+0. In the *Add New Item - HelloWorld* dialog box, click *C# > Data > ADO.NET Entity Data Model*.
+0. Name the model *HelloWorldData*.
+0. Click the *Add* button.
++
+image::Add-New-Item-HelloWorld-dialog.png[]
++
+0. In the *Entity Data Model Wizard* window, select the item *Code First from database*.
+0. Click the *Next* button.
++
+image::Code-First-dialog.png[]
++
+0. The connection string should be selected by default.
+0. Uncheck the *Save connection settings in Web.Config as:* checkbox.
+0. Click the *Next* button.
++
+image::Entity-Data-Model-Wizard-Select-Connection.png[]
++
+0. Select the *Tables* check box and click the *Finish* button.
++
+image::Entity-Data-Model-Wizard-Choose-Database-Objects.png[]
+
+
+=== Configure the OData Endpoint
+
+In the *Solution Explorer* window, click *HelloWorld > App_Start > WebApiConfig.cs*. Replace the `WebApiConfig` class the following code.
+
+```csharp
+namespace HelloWorld
+{
+    public static class WebApiConfig
+    {
+        public static async void Register(HttpConfiguration config)
+        {
+            // enable query options for all properties
+            config.Filter().Expand().Select().OrderBy().MaxTop(null).Count();
+            await config.MapRestierRoute<EntityFrameworkApi<HelloWorldData>>(
+                "defaultConnection",
+                "api/odata",
+                new RestierBatchHandler(GlobalConfiguration.DefaultServer));
+        }
+    }
+}
+```
+
+The configuration `config.Filter().Expand().Select().OrderBy().MaxTop(null).Count();` is enabling filter/expand/select/orderby/count on all properties.
+Starting 1.0 release, there are more smaller granularity control on the properties which can be used in query option, and all properties are disabled to be used by default.
+Users can add configured in CLR class or during model build to configure which properties are allowed to be used in filter/expand/select/orderby/count.
+Refer to http://odata.github.io/WebApi/#13-01-modelbound-attribute[Model bound] document for more details.
+
+
+After these steps, you will have finished bootstrapping an OData service endpoint.
+You can then Run the project and an OData service is started.
+Then you can start by accessing the URL `\http://localhost:<ISS Express port>/api/odata` to view all available entity sets, and try with other basic OData CRUD operations.
+For instance, you may try querying any of the entity sets using the `$select`, `$filter`, `$orderby`, `$top`, `$skip` or `$apply` query string parameters.
